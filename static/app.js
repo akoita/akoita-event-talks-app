@@ -23,6 +23,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnRetry = document.getElementById('btn-retry');
     const releasesTimeline = document.getElementById('releases-timeline');
 
+    // Theme Elements
+    const btnThemeToggle = document.getElementById('btn-theme-toggle');
+    const themeIconSun = document.querySelector('.theme-icon-sun');
+    const themeIconMoon = document.querySelector('.theme-icon-moon');
+
+    // Initialize Theme State
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-theme');
+            themeIconSun.classList.remove('hidden');
+            themeIconMoon.classList.add('hidden');
+        } else {
+            document.body.classList.remove('light-theme');
+            themeIconSun.classList.add('hidden');
+            themeIconMoon.classList.remove('hidden');
+        }
+    }
+    initTheme();
+
     // Modal Elements
     const tweetModal = document.getElementById('tweet-modal');
     const tweetTextarea = document.getElementById('tweet-textarea');
@@ -483,10 +503,25 @@ document.addEventListener('DOMContentLoaded', () => {
         URL.revokeObjectURL(url);
     }
 
+    // Theme Toggle Execution
+    function toggleTheme() {
+        const isLightTheme = document.body.classList.toggle('light-theme');
+        if (isLightTheme) {
+            localStorage.setItem('theme', 'light');
+            themeIconSun.classList.remove('hidden');
+            themeIconMoon.classList.add('hidden');
+        } else {
+            localStorage.setItem('theme', 'dark');
+            themeIconSun.classList.add('hidden');
+            themeIconMoon.classList.remove('hidden');
+        }
+    }
+
     // Event Listeners Configuration
     btnRefresh.addEventListener('click', fetchReleases);
     btnRetry.addEventListener('click', fetchReleases);
     if (btnExport) btnExport.addEventListener('click', exportToCsv);
+    if (btnThemeToggle) btnThemeToggle.addEventListener('click', toggleTheme);
     
     // Search input throttling
     let searchTimeout = null;

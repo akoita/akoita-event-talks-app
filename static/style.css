@@ -794,3 +794,119 @@ body {
     font-size: 0.8rem;
     color: var(--text-muted);
 }
+
+/* ==========================================================================
+   Light Theme Override Configurations
+   ========================================================================== */
+body.light-theme {
+    /* Color Palette */
+    --bg-base-dark: #f5f7fa;
+    --bg-surface-dark: #ffffff;
+    --bg-surface-elevated: #ffffff;
+    --border-color: rgba(0, 0, 0, 0.08);
+    --border-color-hover: rgba(0, 0, 0, 0.15);
+    
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+
+    /* Shadows */
+    --glow-blue: 0 0 15px rgba(59, 130, 246, 0.08);
+    --glow-purple: 0 0 15px rgba(139, 92, 246, 0.08);
+    --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+}
+
+body.light-theme {
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.03) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.03) 0%, transparent 40%);
+}
+
+/* UI Component Adjustments in Light Theme */
+body.light-theme .logo-text h1 {
+    background: linear-gradient(to right, #0f172a, #334155);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+body.light-theme .controls-card {
+    background: rgba(255, 255, 255, 0.7);
+    box-shadow: var(--shadow-lg);
+}
+
+body.light-theme .search-wrapper input {
+    background-color: rgba(0, 0, 0, 0.015);
+    color: var(--text-primary);
+}
+
+body.light-theme .search-wrapper input:focus {
+    background-color: #ffffff;
+}
+
+body.light-theme .filter-btn {
+    background-color: rgba(0, 0, 0, 0.015);
+    color: var(--text-secondary);
+}
+
+body.light-theme .filter-btn:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+    color: var(--text-primary);
+}
+
+body.light-theme .filter-btn.active {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(139, 92, 246, 0.08));
+    border-color: var(--accent-blue-start);
+    color: var(--text-primary);
+}
+
+body.light-theme .day-date {
+    background: rgba(0, 0, 0, 0.015);
+}
+
+body.light-theme .card-content {
+    color: #334155;
+}
+
+body.light-theme .card-content code {
+    background-color: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.02);
+    color: #0f172a;
+}
+
+body.light-theme .card-content pre {
+    background-color: rgba(0, 0, 0, 0.01);
+}
+
+body.light-theme .card-actions .btn-tweet-trigger,
+body.light-theme .card-actions .btn-copy-trigger {
+    background-color: rgba(0, 0, 0, 0.015);
+}
+
+body.light-theme .card-actions .btn-tweet-trigger:hover,
+body.light-theme .card-actions .btn-copy-trigger:hover {
+    background-color: rgba(0, 0, 0, 0.045);
+}
+
+/* X / Twitter Preview Composer Light Theme Styles */
+body.light-theme .tweet-card-preview {
+    background-color: #ffffff;
+    border-color: rgba(0, 0, 0, 0.08);
+    color: #0f1419;
+}
+
+body.light-theme .tweet-textarea {
+    color: #0f1419;
+}
+
+body.light-theme .tweet-footer {
+    border-top: 1px solid #eff3f4;
+}
+
+body.light-theme .tweet-handle {
+    color: #536471;
+}
+
+body.light-theme .char-counter {
+    color: #536471;
+}
+
