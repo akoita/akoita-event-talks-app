@@ -558,12 +558,14 @@ body {
 .card-actions {
     display: flex;
     justify-content: flex-end;
+    gap: 0.5rem;
     margin-top: 0.5rem;
     border-top: 1px solid rgba(255, 255, 255, 0.03);
     padding-top: 0.75rem;
 }
 
-.card-actions .btn-tweet-trigger {
+.card-actions .btn-tweet-trigger,
+.card-actions .btn-copy-trigger {
     background-color: rgba(255, 255, 255, 0.03);
     color: var(--text-secondary);
     border: 1px solid var(--border-color);
@@ -577,6 +579,18 @@ body {
     background-color: rgba(29, 155, 240, 0.08);
     color: var(--twitter-blue);
     border-color: rgba(29, 155, 240, 0.3);
+}
+
+.card-actions .btn-copy-trigger:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    border-color: var(--border-color-hover);
+}
+
+.card-actions .btn-copy-trigger.copied {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--accent-green-start);
+    border-color: rgba(16, 185, 129, 0.4);
 }
 
 .no-results {

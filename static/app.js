@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // DOM Elements
     const btnRefresh = document.getElementById('btn-refresh');
+    const btnExport = document.getElementById('btn-export');
     const iconRefreshSvg = document.getElementById('icon-refresh-svg');
     const searchInput = document.getElementById('search-input');
     const filterButtons = document.querySelectorAll('.filter-btn');
@@ -123,8 +124,10 @@ document.addEventListener('DOMContentLoaded', () => {
         loadingSpinner.classList.remove('hidden');
         errorMessage.classList.add('hidden');
         releasesTimeline.classList.add('hidden');
+        if (btnExport) btnExport.disabled = true;
     }
 
+    // UI Status Helpers
     function hideStatus() {
         statusContainer.classList.add('hidden');
         releasesTimeline.classList.remove('hidden');
@@ -136,6 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         errorMessage.classList.remove('hidden');
         errorText.textContent = msg;
         releasesTimeline.classList.add('hidden');
+        if (btnExport) btnExport.disabled = true;
     }
 
     // Render Timeline with Filters & Search query applied
@@ -251,6 +255,59 @@ document.addEventListener('DOMContentLoaded', () => {
                     const cardActions = document.createElement('div');
                     cardActions.classList.add('card-actions');
 
+                    // Copy Button
+                    const btnCopyTrigger = document.createElement('button');
+                    btnCopyTrigger.classList.add('btn', 'btn-copy-trigger');
+
+                    const copySvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    copySvg.setAttribute('viewBox', '0 0 24 24');
+                    copySvg.setAttribute('width', '14');
+                    copySvg.setAttribute('height', '14');
+                    copySvg.setAttribute('fill', 'none');
+                    copySvg.setAttribute('stroke', 'currentColor');
+                    copySvg.setAttribute('stroke-width', '2');
+                    copySvg.setAttribute('stroke-linecap', 'round');
+                    copySvg.setAttribute('stroke-linejoin', 'round');
+
+                    const copyRect = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    copyRect.setAttribute('x', '9');
+                    copyRect.setAttribute('y', '9');
+                    copyRect.setAttribute('width', '13');
+                    copyRect.setAttribute('height', '13');
+                    copyRect.setAttribute('rx', '2');
+                    copyRect.setAttribute('ry', '2');
+
+                    const copyPath = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    copyPath.setAttribute('d', 'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1');
+
+                    copySvg.appendChild(copyRect);
+                    copySvg.appendChild(copyPath);
+
+                    const copyTextSpan = document.createElement('span');
+                    copyTextSpan.textContent = 'Copy';
+
+                    btnCopyTrigger.appendChild(copySvg);
+                    btnCopyTrigger.appendChild(copyTextSpan);
+
+                    btnCopyTrigger.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        try {
+                            await navigator.clipboard.writeText(update.plain_text);
+                            
+                            // Visual feedback
+                            btnCopyTrigger.classList.add('copied');
+                            copyTextSpan.textContent = 'Copied!';
+                            
+                            setTimeout(() => {
+                                btnCopyTrigger.classList.remove('copied');
+                                copyTextSpan.textContent = 'Copy';
+                            }, 2000);
+                        } catch (err) {
+                            console.error('Failed to copy to clipboard:', err);
+                        }
+                    });
+
+                    // Tweet Button
                     const btnTweetTrigger = document.createElement('button');
                     btnTweetTrigger.classList.add('btn', 'btn-tweet-trigger');
                     
@@ -266,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     shareSvg.appendChild(sharePath);
 
                     const btnTextSpan = document.createElement('span');
-                    btnTextSpan.textContent = 'Tweet Update';
+                    btnTextSpan.textContent = 'Tweet';
 
                     btnTweetTrigger.appendChild(shareSvg);
                     btnTweetTrigger.appendChild(btnTextSpan);
@@ -281,6 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         openTweetComposer(update, day.date, day.link);
                     });
 
+                    cardActions.appendChild(btnCopyTrigger);
                     cardActions.appendChild(btnTweetTrigger);
                     card.appendChild(cardActions);
 
@@ -313,6 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
             releasesTimeline.appendChild(noResultsCard);
         }
 
+        if (btnExport) btnExport.disabled = state.releases.length === 0;
         hideStatus();
     }
 
@@ -374,9 +433,60 @@ document.addEventListener('DOMContentLoaded', () => {
         closeTweetModal();
     }
 
+    // Export Currently Filtered/Searched Release Notes to CSV
+    function exportToCsv() {
+        if (state.releases.length === 0) return;
+
+        const csvRows = [];
+        
+        // CSV Headers (Escaped)
+        csvRows.push(['Date', 'Type', 'Description', 'Link'].map(val => `"${val.replace(/"/g, '""')}"`).join(','));
+
+        state.releases.forEach(day => {
+            day.updates.forEach(update => {
+                // Apply active filters to exported dataset
+                const categoryMatches = state.filter === 'all' || 
+                    update.type.toLowerCase() === state.filter.toLowerCase();
+                
+                const textMatches = state.searchQuery === '' || 
+                    update.plain_text.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
+                    update.type.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
+                    day.date.toLowerCase().includes(state.searchQuery.toLowerCase());
+                
+                if (categoryMatches && textMatches) {
+                    const row = [
+                        day.date,
+                        update.type,
+                        update.plain_text.replace(/\r?\n|\r/g, ' '), // replace line breaks with spaces for clean CSV formatting
+                        day.link
+                    ];
+                    csvRows.push(row.map(val => `"${(val || '').replace(/"/g, '""')}"`).join(','));
+                }
+            });
+        });
+
+        if (csvRows.length <= 1) {
+            alert('No release notes match the current filters to export.');
+            return;
+        }
+
+        // Generate download Blob to support arbitrary file sizes securely
+        const blob = new Blob([csvRows.join("\n")], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `bigquery_releases_${state.filter}_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
     // Event Listeners Configuration
     btnRefresh.addEventListener('click', fetchReleases);
     btnRetry.addEventListener('click', fetchReleases);
+    if (btnExport) btnExport.addEventListener('click', exportToCsv);
     
     // Search input throttling
     let searchTimeout = null;
