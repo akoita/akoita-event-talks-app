@@ -22,11 +22,48 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorText = document.getElementById('error-text');
     const btnRetry = document.getElementById('btn-retry');
     const releasesTimeline = document.getElementById('releases-timeline');
+    const btnBackToTop = document.getElementById('btn-back-to-top');
 
     // Theme Elements
     const btnThemeToggle = document.getElementById('btn-theme-toggle');
     const themeIconSun = document.querySelector('.theme-icon-sun');
     const themeIconMoon = document.querySelector('.theme-icon-moon');
+
+    // Unread/Read updates tracking state
+    let readUpdates = JSON.parse(localStorage.getItem('read_updates') || '[]');
+
+    // Toast Notification helper
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.classList.add('toast', `toast-${type}`);
+
+        const icon = document.createElement('span');
+        icon.textContent = type === 'success' ? '✅' : type === 'error' ? '⚠️' : 'ℹ️';
+
+        const text = document.createElement('span');
+        text.textContent = message;
+
+        toast.appendChild(icon);
+        toast.appendChild(text);
+        container.appendChild(toast);
+
+        // Transition trigger
+        setTimeout(() => toast.classList.add('show'), 50);
+
+        // Self dismiss after 3.5 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
+    }
+
+    // Escape regex characters helper
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
 
     // Initialize Theme State
     function initTheme() {
@@ -63,9 +100,24 @@ document.addEventListener('DOMContentLoaded', () => {
         ]);
         
         function buildSafeDom(node, parent) {
-            // Text node
+            // Text node with search highlighting support
             if (node.nodeType === Node.TEXT_NODE) {
-                parent.appendChild(document.createTextNode(node.nodeValue));
+                const text = node.nodeValue;
+                if (state.searchQuery && text.toLowerCase().includes(state.searchQuery.toLowerCase())) {
+                    const regex = new RegExp(`(${escapeRegExp(state.searchQuery)})`, 'gi');
+                    const parts = text.split(regex);
+                    parts.forEach(part => {
+                        if (part.toLowerCase() === state.searchQuery.toLowerCase()) {
+                            const mark = document.createElement('mark');
+                            mark.textContent = part;
+                            parent.appendChild(mark);
+                        } else {
+                            parent.appendChild(document.createTextNode(part));
+                        }
+                    });
+                } else {
+                    parent.appendChild(document.createTextNode(text));
+                }
                 return;
             }
             
@@ -225,6 +277,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     cardTop.appendChild(badge);
 
+                    // Read/Unread State check
+                    const isNew = !readUpdates.includes(update.id);
+                    if (isNew) {
+                        const newDot = document.createElement('span');
+                        newDot.classList.add('new-dot');
+                        newDot.textContent = 'New';
+                        cardTop.appendChild(newDot);
+
+                        // Mark as read on hover
+                        card.addEventListener('mouseenter', () => {
+                            if (!readUpdates.includes(update.id)) {
+                                readUpdates.push(update.id);
+                                localStorage.setItem('read_updates', JSON.stringify(readUpdates));
+                                newDot.style.opacity = '0';
+                                setTimeout(() => newDot.remove(), 300);
+                            }
+                        }, { once: true });
+                    }
+
                     // Add external anchor link if available
                     if (day.link) {
                         const extLink = document.createElement('a');
@@ -317,6 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             // Visual feedback
                             btnCopyTrigger.classList.add('copied');
                             copyTextSpan.textContent = 'Copied!';
+                            showToast('Copied to clipboard!', 'success');
                             
                             setTimeout(() => {
                                 btnCopyTrigger.classList.remove('copied');
@@ -324,6 +396,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             }, 2000);
                         } catch (err) {
                             console.error('Failed to copy to clipboard:', err);
+                            showToast('Failed to copy to clipboard', 'error');
                         }
                     });
 
@@ -486,7 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (csvRows.length <= 1) {
-            alert('No release notes match the current filters to export.');
+            showToast('No release notes match the current filters to export.', 'error');
             return;
         }
 
@@ -501,6 +574,8 @@ document.addEventListener('DOMContentLoaded', () => {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
+        
+        showToast('CSV Exported successfully!', 'success');
     }
 
     // Theme Toggle Execution
@@ -560,6 +635,24 @@ document.addEventListener('DOMContentLoaded', () => {
             closeTweetModal();
         }
     });
+
+    // Scroll & Back to top click listener
+    if (btnBackToTop) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                btnBackToTop.classList.add('show');
+            } else {
+                btnBackToTop.classList.remove('show');
+            }
+        });
+        btnBackToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    // Connection/Network Status monitors
+    window.addEventListener('online', () => showToast('You are back online!', 'success'));
+    window.addEventListener('offline', () => showToast('You are offline. Features may be limited.', 'error'));
 
     // Initial Load execution
     fetchReleases();

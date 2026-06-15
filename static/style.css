@@ -910,3 +910,146 @@ body.light-theme .char-counter {
     color: #536471;
 }
 
+/* ==========================================================================
+   UX Improvements CSS Styling
+   ========================================================================== */
+
+/* Search Query Text Highlighting */
+mark {
+    background-color: rgba(59, 130, 246, 0.3);
+    color: inherit;
+    padding: 0 0.15rem;
+    border-radius: 3px;
+}
+body.light-theme mark {
+    background-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Toast Notifications Container */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 2000;
+    pointer-events: none;
+}
+
+.toast {
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 12px 20px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
+    font-size: 0.9rem;
+    font-weight: 500;
+    pointer-events: auto;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.toast-success {
+    border-left: 4px solid var(--accent-green-start);
+}
+
+.toast-error {
+    border-left: 4px solid var(--accent-red-start);
+}
+
+.toast-info {
+    border-left: 4px solid var(--accent-blue-start);
+}
+
+/* Back to Top Scroll Button */
+.btn-back-to-top {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    background-color: var(--bg-surface-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    z-index: 999;
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+}
+
+.btn-back-to-top.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.btn-back-to-top:hover {
+    background-color: var(--accent-blue-start);
+    color: white;
+    border-color: var(--accent-blue-start);
+    transform: translateY(-2px);
+}
+
+/* Unread (New) Dot Badge */
+.new-dot {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--accent-green-start);
+    background-color: rgba(16, 185, 129, 0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    margin-left: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    animation: pulse 2.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.65; }
+    50% { opacity: 1; }
+    100% { opacity: 0.65; }
+}
+
+/* Responsive Header optimization for narrow screens */
+@media (max-width: 600px) {
+    .header-actions .btn span {
+        display: none;
+    }
+    .header-actions .btn {
+        padding: 0.65rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+    }
+    .app-header {
+        flex-direction: column;
+        gap: 1.25rem;
+        align-items: flex-start;
+    }
+    .header-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+
